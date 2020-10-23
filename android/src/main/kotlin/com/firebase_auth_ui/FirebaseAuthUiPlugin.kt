@@ -151,6 +151,10 @@ class FirebaseAuthUiPlugin(private val activity: Activity) : MethodCallHandler, 
         if (logoResourceId > 0)
             instance = instance.setLogo(logoResourceId)
 
+        val themeResourceId = getThemeResourceId()
+        if (themeResourceId > 0)
+            instance = instance.setTheme(themeResourceId)
+
         if (tos?.isNotEmpty() == true && privacyPolicy?.isNotEmpty() == true)
             instance = instance.setTosAndPrivacyPolicyUrls(tos, privacyPolicy)
 
@@ -160,5 +164,9 @@ class FirebaseAuthUiPlugin(private val activity: Activity) : MethodCallHandler, 
 
     private fun getLogoResourceId(): Int {
         return activity.resources.getIdentifier("auth_ui_logo", "drawable", activity.packageName)
+    }
+
+    private fun getThemeResourceId(): Int {
+        return activity.resources.getIdentifier("LaunchTheme", "style", activity.packageName)
     }
 }
