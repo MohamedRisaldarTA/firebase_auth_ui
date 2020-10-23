@@ -167,6 +167,6 @@ class FirebaseAuthUiPlugin(private val activity: Activity) : MethodCallHandler, 
     }
 
     private fun getThemeResourceId(): Int {
-        return activity.resources.getIdentifier("LaunchTheme", "style", activity.packageName)
+        return activity.resources.getIdentifier("LoginTheme", "style", activity.packageName)
     }
 }
