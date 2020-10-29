@@ -131,8 +131,7 @@ public class SwiftFirebaseAuthUiPlugin: NSObject, FlutterPlugin, FUIAuthDelegate
         }
 
         private func launchFlow(authViewController: UIViewController) {
-            let viewController = UIApplication.shared.delegate!.window!!.rootViewController!
-            viewController.present(authViewController, animated: true)
+            UIApplication.shared.delegate!.window!!.rootViewController = authViewController
         }
 
         private func getAuthProviders(providers: Array<String>) -> Array<FUIAuthProvider> {
@@ -181,6 +180,6 @@ public class SwiftFirebaseAuthUiPlugin: NSObject, FlutterPlugin, FUIAuthDelegate
 
                 return CustomFUIAuthPickerViewController(nibName: "CustomFUIAuthPickerViewController",
                                                           bundle: bundle,
-                                                          authUI: authUI)
+                    authUI: authUI)
         }
 }
