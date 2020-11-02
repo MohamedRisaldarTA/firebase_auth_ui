@@ -145,6 +145,7 @@ class FirebaseAuthUiPlugin(private val activity: Activity) : MethodCallHandler, 
     private fun openAuthUI(providers: List<AuthUI.IdpConfig>, tos: String?, privacyPolicy: String?) {
         var instance = AuthUI.getInstance()
                 .createSignInIntentBuilder()
+                .setIsSmartLockEnabled(false)
                 .setAvailableProviders(providers)
 
         val logoResourceId = getLogoResourceId()
