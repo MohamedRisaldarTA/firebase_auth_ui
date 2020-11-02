@@ -6,6 +6,7 @@ import FirebaseUI
 public class SwiftFirebaseAuthUiPlugin: NSObject, FlutterPlugin, FUIAuthDelegate {
         private var result: FlutterResult?
         private var authUI: FUIAuth?
+        private var flutterVC : UIViewController?
 
         /**
          * Indicates that user cancelled the sign-in process via back or cancel button
@@ -88,12 +89,14 @@ public class SwiftFirebaseAuthUiPlugin: NSObject, FlutterPlugin, FUIAuthDelegate
             }
 
         public func authUI(_ authUI: FUIAuth, didSignInWith authDataResult: AuthDataResult?, error: Error?) {
+            UIApplication.shared.delegate!.window!!.rootViewController = flutterVC
             let user = authDataResult?.user
             if (error != nil) {
                 if (UInt((error as NSError?)?.code ?? -12) == FUIAuthErrorCode.userCancelledSignIn.rawValue) {
                     result?(FlutterError(code: ERROR_USER_CANCELLED, message: "User cancelled the sign-in flow",
                                          details: nil))
                 } else {
+                    
                     result?(FlutterError(code: ERROR_UNKNOWN, message: "Unknown error occurred.",
                                          details: nil))
                 }
@@ -131,6 +134,7 @@ public class SwiftFirebaseAuthUiPlugin: NSObject, FlutterPlugin, FUIAuthDelegate
         }
 
         private func launchFlow(authViewController: UIViewController) {
+         flutterVC = UIApplication.shared.delegate!.window!!.rootViewController!
             UIApplication.shared.delegate!.window!!.rootViewController = authViewController
         }
 
