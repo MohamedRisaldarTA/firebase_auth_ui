@@ -68,6 +68,7 @@ class FirebaseAuthUi {
         userMap["phone_number"] ?? "",
         userMap["photo_url"] ?? "",
         userMap["provider_id"] ?? "",
+        userMap["id_token"] ?? "",
         metaData,
         isAnonymous: userMap["is_anonymous"] ?? false,
         isNewUser: userMap["is_new_user"]);

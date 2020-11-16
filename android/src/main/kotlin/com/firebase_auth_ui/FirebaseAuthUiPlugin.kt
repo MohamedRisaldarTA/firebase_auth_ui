@@ -56,30 +56,36 @@ class FirebaseAuthUiPlugin(private val activity: Activity) : MethodCallHandler, 
             Log.e("AuthPlugin", "requestCode $requestCode, resultCode $resultCode, response $response")
             if (resultCode == Activity.RESULT_OK) {
                 val user = FirebaseAuth.getInstance().currentUser
-
-                if (user != null) {
-                    val userMap = hashMapOf<String, Any>()
-                    userMap["display_name"] = user.displayName ?: ""
-                    userMap["uid"] = user.uid
-                    userMap["email"] = user.email ?: ""
-                    userMap["phone_number"] = user.phoneNumber ?: ""
-                    userMap["provider_id"] = user.providerId
-                    userMap["photo_url"] = user.photoUrl?.toString() ?: ""
-                    userMap["is_anonymous"] = user.isAnonymous
-                    userMap["is_new_user"] = response?.isNewUser ?: false
-
-                    // MetaData
-                    val metadataMap = hashMapOf<String, Any>()
-                    user.metadata?.let { metadata ->
-                        metadataMap["creation_timestamp"] = metadata.creationTimestamp
-                        metadataMap["last_sign_in_timestamp"] = metadata.lastSignInTimestamp
-                    }
-                    userMap["metadata"] = metadataMap
-
-                    result?.success(userMap)
-                } else {
-                    result?.error(ERROR_UNKNOWN, "Unknown error occurred.", null)
-                }
+                user?.getIdToken(true)
+                        ?.addOnCompleteListener {
+                            if (it.isSuccessful()) {
+                                var idToken = it.getResult()?.getToken().toString()
+                                if (user != null) {
+                                    val userMap = hashMapOf<String, Any>()
+                                    userMap["display_name"] = user.displayName ?: ""
+                                    userMap["uid"] = user.uid
+                                    userMap["email"] = user.email ?: ""
+                                    userMap["phone_number"] = user.phoneNumber ?: ""
+                                    userMap["provider_id"] = user.providerId
+                                    userMap["photo_url"] = user.photoUrl?.toString() ?: ""
+                                    userMap["id_token"] = idToken ?: ""
+                                    userMap["is_anonymous"] = user.isAnonymous
+                                    userMap["is_new_user"] = response?.isNewUser ?: false
+                                    // MetaData
+                                    val metadataMap = hashMapOf<String, Any>()
+                                    user.metadata?.let { metadata ->
+                                        metadataMap["creation_timestamp"] = metadata.creationTimestamp
+                                        metadataMap["last_sign_in_timestamp"] = metadata.lastSignInTimestamp
+                                    }
+                                    userMap["metadata"] = metadataMap
+                                    result?.success(userMap)
+                                } else {
+                                    result?.error(ERROR_UNKNOWN, "Unknown error occurred.", null)
+                                }
+                            } else {
+                                Log.d("Tag", it.getException().toString())
+                            }
+                        }
             } else if (response == null) {
                 result?.error(ERROR_USER_CANCELLED, "User cancelled the sign-in flow", null)
             } else {
