@@ -54,7 +54,7 @@ public class SwiftFirebaseAuthUiPlugin: NSObject, FlutterPlugin, FUIAuthDelegate
                                             details: nil))
                         return
                     }
-                    
+
                     let tos = args["tos"] as? String ?? ""
                     let privacyPolicy = args["privacyPolicy"] as? String ?? ""
 
@@ -91,45 +91,63 @@ public class SwiftFirebaseAuthUiPlugin: NSObject, FlutterPlugin, FUIAuthDelegate
         public func authUI(_ authUI: FUIAuth, didSignInWith authDataResult: AuthDataResult?, error: Error?) {
             UIApplication.shared.delegate!.window!!.rootViewController = flutterVC
             let user = authDataResult?.user
+
             if (error != nil) {
                 if (UInt((error as NSError?)?.code ?? -12) == FUIAuthErrorCode.userCancelledSignIn.rawValue) {
                     result?(FlutterError(code: ERROR_USER_CANCELLED, message: "User cancelled the sign-in flow",
                                          details: nil))
                 } else {
-                    
+
                     result?(FlutterError(code: ERROR_UNKNOWN, message: "Unknown error occurred.",
                                          details: nil))
                 }
             } else {
-                var createdTimeStamp = Int(user?.metadata.creationDate?.timeIntervalSince1970 ?? -1)
-                var lastSignInTimeStamp = Int(user?.metadata.lastSignInDate?.timeIntervalSince1970 ?? -1)
+                if((user) != nil){
+                    user?.getIDToken(completion: { (token, Error) in
 
-                if createdTimeStamp != -1 {
-                    // convert to milliseconds to match with Android
-                    createdTimeStamp *= 1000
+                                       if (error != nil) {
+                                           self.result?(FlutterError(code: self.ERROR_UNKNOWN, message: "Unable to obtain ID Token",
+                                                                                   details: nil))
+                                       }else{
+                                           var createdTimeStamp = Int(user?.metadata.creationDate?.timeIntervalSince1970 ?? -1)
+                                                          var lastSignInTimeStamp = Int(user?.metadata.lastSignInDate?.timeIntervalSince1970 ?? -1)
+
+                                                          if createdTimeStamp != -1 {
+                                                              // convert to milliseconds to match with Android
+                                                              createdTimeStamp *= 1000
+                                                          }
+
+                                                          if lastSignInTimeStamp != -1 {
+                                                              // convert to milliseconds to match with Android
+                                                              lastSignInTimeStamp *= 1000
+                                                          }
+
+                                                          let metaDataDictionary: NSMutableDictionary = [
+                                                              "creation_timestamp": createdTimeStamp,
+                                                              "last_sign_in_timestamp": lastSignInTimeStamp,
+                                                          ]
+                                                          let userDisctionary : NSMutableDictionary = [
+                                                              "display_name": user?.displayName ?? "",
+                                                              "email": user?.email ?? "",
+                                                              "provider_id": user?.providerID ?? "",
+                                                              "uid": user?.uid ?? "",
+                                                              "photo_url": user?.photoURL?.absoluteString ?? "",
+                                                              "phone_number": user?.phoneNumber ?? "",
+                                                              "id_token": token ?? "",
+                                                              "is_anonymous": user?.isAnonymous ?? false,
+                                                              "is_new_user": authDataResult?.additionalUserInfo?.isNewUser ?? false,
+                                                              "metadata": metaDataDictionary,
+                                                          ]
+                                           self.result?(userDisctionary)
+                                       }
+
+                                   })
+                }else{
+                    result?(FlutterError(code: ERROR_UNKNOWN, message: "User Details not found.",
+                                                           details: nil))
                 }
 
-                if lastSignInTimeStamp != -1 {
-                    // convert to milliseconds to match with Android
-                    lastSignInTimeStamp *= 1000
-                }
 
-                let metaDataDictionary: NSMutableDictionary = [
-                    "creation_timestamp": createdTimeStamp,
-                    "last_sign_in_timestamp": lastSignInTimeStamp,
-                ]
-                let userDisctionary : NSMutableDictionary = [
-                    "display_name": user?.displayName ?? "",
-                    "email": user?.email ?? "",
-                    "provider_id": user?.providerID ?? "",
-                    "uid": user?.uid ?? "",
-                    "photo_url": user?.photoURL?.absoluteString ?? "",
-                    "phone_number": user?.phoneNumber ?? "",
-                    "is_anonymous": user?.isAnonymous ?? false,
-                    "is_new_user": authDataResult?.additionalUserInfo?.isNewUser ?? false,
-                    "metadata": metaDataDictionary,
-                ]
-                result?(userDisctionary)
             }
         }
 
